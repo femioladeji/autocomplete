@@ -1,26 +1,57 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { PureComponent } from 'react';
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const usersUrl = 'https://jsonplaceholder.typicode.com/users';
+
+class App extends PureComponent {
+  state = {
+    query: '',
+    users: []
+  }
+
+  componentDidMount() {
+    fetch(usersUrl).then(response => {
+      response.json().then(users => {
+        this.setState({
+          users
+        });
+      })
+    }).catch(error => {
+      alert('Couldn\t retrieve users');
+    })
+  }
+
+  change = ({ target }) => {
+    this.setState({
+      query: target.value,
+      showSuggestion: true
+    });
+  }
+
+  chooseSuggestion = (name) => {
+    this.setState({
+      query: name,
+      showSuggestion: false
+    });
+  }
+
+  render() {
+    const { query, users, showSuggestion } = this.state;
+    const suggestions = users.filter(eachUser => query && eachUser.name.toLowerCase().includes(query.toLowerCase()));
+    return (
+      <div className="App">
+        <div className="form-wrapper">
+          <p>Enter Name:</p>
+          <input value={query} onChange={this.change} type="text" name="search" className="search" />
+          <div className="suggestions">
+            {
+              showSuggestion && suggestions.map((each, key) => <p onClick={() => this.chooseSuggestion(each.name)} key={key}>{each.name}</p>)
+            }
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
 export default App;
